@@ -9,14 +9,10 @@ import com.citytechware.idmanager.service.PensionerInfomationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
@@ -30,10 +26,10 @@ import java.util.Optional;
 @Profile("pension")
 public class PensionIDController {
 
+    private static final String SEARCH_URL = "search";
+
     private PensionerInfomationService service;
     private PensionPhotographRepository photographRepository;
-    @Value("${my.application.name}")
-    private String applicationName;
 
     @Autowired
     public PensionIDController(PensionerInfomationService service, PensionPhotographRepository photographRepository) {
@@ -44,33 +40,29 @@ public class PensionIDController {
     @RequestMapping(value = "/search")
     public String showSearchPage(Model model) {
         model.addAttribute("DPNumber", "");
-        model.addAttribute("applicationName", applicationName);
-        return "search";
+        return SEARCH_URL;
     }
 
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
-    public String searchSingle(Model model, @RequestParam @NotNull String DPNumber) {
-        if(DPNumber.isEmpty() || DPNumber==null) {
-            throw new IllegalArgumentException("Invalid DPNumber or Record Not Found");
-        }
+    @PostMapping(value = "/search")
+    public String searchSingle(Model model, @RequestParam("DPNumber") @NotNull String dpnumber) {
 
-        Optional<Biodata> optionalBiodata = service.findByNewDPNumberEquals(DPNumber);
+        String safeDP = dpnumber.trim();
+
+        Optional<Biodata> optionalBiodata = service.findByNewDPNumberEquals(safeDP);
         if(!optionalBiodata.isPresent()) {
             model.addAttribute("message", "Record Not Found");
-            return "search";
+            return SEARCH_URL;
         }
 
         Pensioner pensioner = BiodataToPensionerConverter.convert(optionalBiodata.get());
         model.addAttribute("pensioner", pensioner);
-        return "search";
+        return SEARCH_URL;
     }
 
     @GetMapping("/pensioner/photo")
-    public void renderImageFromDB(@RequestParam String BiodataID, HttpServletResponse response) throws IOException {
-        if(BiodataID.isEmpty() || BiodataID==null) {
-            throw new IllegalArgumentException("Invalid DPNumber or Record Not Found");
-        }
-        Optional<Photograph> optionalPhotograph = photographRepository.findByBiodataIDEquals(Integer.valueOf(BiodataID));
+    public void renderImageFromDB(@RequestParam("BiodataID") String id, HttpServletResponse response) throws IOException {
+
+        Optional<Photograph> optionalPhotograph = photographRepository.findByBiodataIDEquals(Integer.valueOf(id));
         if(optionalPhotograph.isPresent()) {
             byte[] photo = optionalPhotograph.get().getPhotograph();
             byte[] byteArray = new byte[photo.length];
