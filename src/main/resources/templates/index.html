@@ -9,10 +9,23 @@
 <body>
 <div class="container">
     <!-- Content here -->
-    <h2>BOSG - Pension</h2>
-    <h3>ID Card Information System</h3>
-    <div class="row">
-        <a th:href="@{/search.html}">Search Record?</a>
+    <div class="jumbotron jumbotron-fluid">
+        <h1 class="display-4">BOSG Biometric!</h1>
+        <p class="lead">A simple utility application for interacting with the Biometric Database with Inbuilt support for both Pension and Salary Databases.</p>
+        <hr class="my-4">
+
+        <div class="row">
+            <div class="col-sm-3" align="right">
+                <p class="lead">Search Options:</p>
+            </div>
+            <div class="col-sm-6">
+                <a href="/search"> <button type="button" class="btn btn-primary  btn-lg">Search By ID?</button> </a>
+                <a href="/search/date"> <button type="button" class="btn btn-secondary  btn-lg">Date</button> </a>
+                <a href="/search/daterange"> <button type="button" class="btn btn-success  btn-lg">Date-Range</button> </a>
+            </div>
+            <div class="col-sm-3">
+            </div>
+        </div>
     </div>
 
 </div>

@@ -21,8 +21,9 @@
                 <input type="text" class="form-control" th:value="${DPNumber}" required="required" name="DPNumber" id="DPNumber" aria-describedby="DPNumberHelp">
                 <small id="startDateHelp" class="form-text text-muted">Pensioner's New DPNumber.</small>
             </div>
-
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
         </form>
     </div>
     <div class="split-pane-divider" />
@@ -57,7 +58,7 @@
                 <td th:text="${pensioner.getSurname()}">@mdo</td>
             </tr>
             <tr>
-                <td>Date og Birth:</td>
+                <td>Date of Birth:</td>
                 <td th:text="${pensioner.getDob()}">@mdo</td>
             </tr>
             <tr>
