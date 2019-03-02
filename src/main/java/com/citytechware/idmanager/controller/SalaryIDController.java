@@ -1,11 +1,12 @@
 package com.citytechware.idmanager.controller;
 
-import com.citytechware.idmanager.dto.Pensioner;
-import com.citytechware.idmanager.dto.converter.BiodataToPensionerConverter;
-import com.citytechware.idmanager.model.pension.Photograph;
-import com.citytechware.idmanager.model.pension.Biodata;
-import com.citytechware.idmanager.service.PensionerInfomationService;
-import com.citytechware.idmanager.service.PensionPhotoService;
+import com.citytechware.idmanager.dto.Staff;
+import com.citytechware.idmanager.dto.converter.BiodataToStaffConverter;
+import com.citytechware.idmanager.model.salary.Biodata;
+import com.citytechware.idmanager.model.salary.Employment;
+import com.citytechware.idmanager.model.salary.Photograph;
+import com.citytechware.idmanager.service.SalaryInformationService;
+import com.citytechware.idmanager.service.SalaryPhotoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,52 +26,64 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
-@Slf4j
 @Controller
-@Profile("pension")
-public class PensionIDController {
-
-    private static final String SEARCH_URL = "search";
+@Slf4j
+@Profile("salary")
+public class SalaryIDController {
+    private static final String SEARCH_URL = "salary/search";
 
     @Value("${my.application.name}")
-    private String applicationName;
+    public String applicationName;
 
-    private PensionerInfomationService service;
-    private PensionPhotoService pensionPhotoService;
+    private SalaryInformationService service;
+    private SalaryPhotoService salaryPhotoService;
 
     @Autowired
-    public PensionIDController(PensionerInfomationService service, PensionPhotoService pensionPhotoService) {
+    public SalaryIDController(SalaryInformationService service, SalaryPhotoService salaryPhotoService) {
         this.service = service;
-        this.pensionPhotoService = pensionPhotoService;
+        this.salaryPhotoService = salaryPhotoService;
     }
 
-    @RequestMapping(value = "/search")
+    @RequestMapping(value = "/salary/search")
     public String showSearchPage(Model model) {
         model.addAttribute("DPNumber", "");
         model.addAttribute("applicationName", applicationName);
         return SEARCH_URL;
     }
 
-    @PostMapping(value = "/search")
+    @PostMapping(value = "/salary/search")
     public String searchSingle(Model model, @RequestParam("DPNumber") @NotNull String dpnumber) {
 
         String safeDP = dpnumber.trim();
 
+        // Find Staff record from DB
         Optional<Biodata> optionalBiodata = service.findByNewDPNumberEquals(safeDP);
         if(!optionalBiodata.isPresent()) {
+            model.addAttribute("applicationName", applicationName);
             model.addAttribute("message", "Record Not Found");
             return SEARCH_URL;
         }
 
-        Pensioner pensioner = BiodataToPensionerConverter.convert(optionalBiodata.get());
-        model.addAttribute("pensioner", pensioner);
+        // Convert Biodata to DTO Staff
+        Staff staff = BiodataToStaffConverter.convert(optionalBiodata.get());
+
+        // Find Staff Employment Details
+        Optional<Employment> optionalEmployment = service.findEmploymentDetailsByID(staff.getBiodataID());
+        if(!optionalEmployment.isPresent()) {
+            staff.setMinistry("");
+        } else {
+            staff.setMinistry(optionalEmployment.get().getMinistry());
+        }
+
+        model.addAttribute("applicationName", applicationName);
+        model.addAttribute("staff", staff);
         return SEARCH_URL;
     }
 
-    @GetMapping("/pensioner/photo")
+    @GetMapping("/salary/photo")
     public void renderImageFromDB(@RequestParam("BiodataID") String id, HttpServletResponse response) throws IOException {
 
-        Optional<Photograph> optionalPhotograph = pensionPhotoService.findByID(Integer.valueOf(id));
+        Optional<Photograph> optionalPhotograph = salaryPhotoService.findByID(Integer.valueOf(id));
         if(optionalPhotograph.isPresent()) {
             byte[] photo = optionalPhotograph.get().getPhotograph();
             byte[] byteArray = new byte[photo.length];

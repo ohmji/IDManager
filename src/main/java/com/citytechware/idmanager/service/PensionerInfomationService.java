@@ -1,9 +1,10 @@
 package com.citytechware.idmanager.service;
 
 import com.citytechware.idmanager.model.pension.Biodata;
-import com.citytechware.idmanager.repository.PensionBiodataRepository;
+import com.citytechware.idmanager.model.pension.repository.PensionBiodataRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@Profile("pension")
 public class PensionerInfomationService implements IDCardRecord<Biodata> {
     private PensionBiodataRepository biodataRepository;
 

@@ -1,10 +1,11 @@
 package com.citytechware.idmanager.controller;
 
 import com.citytechware.idmanager.model.pension.Photograph;
-import com.citytechware.idmanager.service.PensionerPhotoService;
+import com.citytechware.idmanager.service.PensionPhotoService;
 import com.citytechware.idmanager.utils.DateToTimestamp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,12 +25,13 @@ import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Controller
+@Profile("pension")
 public class PensionPhotographController {
 
-    private PensionerPhotoService photoService;
+    private PensionPhotoService pensionPhotoService;
 
-    public PensionPhotographController(PensionerPhotoService photoService) {
-        this.photoService = photoService;
+    public PensionPhotographController(PensionPhotoService pensionPhotoService) {
+        this.pensionPhotoService = pensionPhotoService;
     }
 
     @GetMapping(value = "/download/photos")
@@ -46,7 +48,7 @@ public class PensionPhotographController {
         Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
         Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
 
-        Set<Photograph> photographs = photoService.findAllPhotographByDate(startOfDay, endOfDay);
+        Set<Photograph> photographs = pensionPhotoService.findAllPhotographByDate(startOfDay, endOfDay);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.addHeader("Content-Disposition", "attachment; filename=\"photos.zip\"");
@@ -57,7 +59,7 @@ public class PensionPhotographController {
 
             // Create Image File in System temp directory
             String tempDir = System.getProperty("java.io.tmpdir");
-            File temp = new File(tempDir + photograph.getDPNumber().trim() + ".jpg");
+            File temp = new File(tempDir + photograph.getBiodataID() + ".jpg");
 
             // Write image byte into File
             FileOutputStream out = new FileOutputStream(temp);
