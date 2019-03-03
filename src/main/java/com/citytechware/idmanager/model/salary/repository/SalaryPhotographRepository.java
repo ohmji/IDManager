@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,5 +18,5 @@ public interface SalaryPhotographRepository extends JpaRepository<Photograph, In
     Optional<Photograph> findByBiodataIDEquals(@Param("biodataID") Integer biodataID);
 
     @Query(value = "SELECT p.Signature, p.BiodataID, p.Photograph, p.PhotographID, p.DPNumber FROM bsgovt.photograph p WHERE p.BiodataID IN (:biodataIDs)", nativeQuery = true)
-    Set<Photograph> findAllByBiodataIDIn(@Param("biodataIDs") Integer[] ids);
+    Set<Photograph> findAllByBiodataIDIn(@Param("biodataIDs") List<Integer> ids);
 }

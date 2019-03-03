@@ -4,7 +4,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DateToTimestamp {
-    public static final int START_OF_DAY = 0;
+    // Begining of Day at 1:00 am && End of Day at 23:00
+    public static final int START_OF_DAY = 1;
     public static final int END_OF_DAY = 23;
 
     private DateToTimestamp() {

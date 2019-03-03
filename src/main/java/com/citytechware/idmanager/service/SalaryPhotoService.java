@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class SalaryPhotoService implements IDCardPhotoRecord<Photograph> {
     }
 
     @Override
-    public Set<Photograph> findAllByBiodataIDIn(Integer[] ids) {
+    public Set<Photograph> findAllByBiodataIDIn(List<Integer> ids) {
         return salaryPhotographRepository.findAllByBiodataIDIn(ids);
     }
 }

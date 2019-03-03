@@ -10,23 +10,23 @@
 <div class="container">
     <div class="jumbotron">
         <!-- Content here -->
-        <h3>ID Card Information System - Search by DateRange</h3>
+        <h1 class="display-4" th:text="'BOSG Biometric - ' + ${applicationName}">BOSG Biometric!</h1>
 
         <div class="row">
             <div class="col-sm-3" align="right">
                 <p class="lead">Search Options:</p>
             </div>
             <div class="col-sm-6">
-                <a href="/search"> <button type="button" class="btn btn-primary  btn-lg">Search By ID?</button> </a>
-                <a href="/search/daterange"> <button type="button" class="btn btn-success  btn-lg">Date-Range</button> </a>
-                <a href="/download/photos"> <button type="button" class="btn btn-success  btn-lg">Download Photos</button> </a>
+                <a href="/salary/search"> <button type="button" class="btn btn-primary  btn-lg">Search By ID?</button> </a>
+                <a href="/salary/search/daterange"> <button type="button" class="btn btn-success  btn-lg">Date-Range</button> </a>
+                <a href="/salary/download/photos"> <button type="button" class="btn btn-success  btn-lg">Download Photos</button> </a>
             </div>
             <div class="col-sm-3">
             </div>
         </div>
 
         <div class="row">
-            <form action="#" method="post" th:action="@{/search/daterange}" >
+            <form action="#" method="post" th:action="@{/salary/search/daterange}" >
                 <div th:if="${message!=null}" class="m-alert m-alert--outline alert alert-danger alert-dismissible animated fadeIn" role="alert">
                     <p class="error" th:text="${message}">Record Not Found!</p>
                 </div>
@@ -47,6 +47,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

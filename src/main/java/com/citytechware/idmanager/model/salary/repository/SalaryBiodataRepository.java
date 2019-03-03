@@ -15,6 +15,6 @@ public interface SalaryBiodataRepository extends JpaRepository<Biodata, Integer>
     @Query(value = "SELECT b.BiodataID, b.DPNumber, b.Surname, b.Firstname, b.Othername, b.Gender, b.DOB, b.DOA_first, b.New_DPNumber, b.AccountNumber, b.BankName, b.BVN, b.MobileNumber1, b.MobileNumber2, b.Email, b.StateOfOrigin, b.LGA, b.Nationality, b.recordtime FROM bsgovt.biodata b WHERE b.New_DPNumber = :dpNumber", nativeQuery = true)
     Optional<Biodata> findByNewDPNumberEquals(@Param("dpNumber") String NewDPNumber);
 
-    @Query(value = "SELECT b.BiodataID, b.DPNumber, b.Surname, b.Firstname, b.Othername, b.Gender, b.DOB, b.DOA_first, b.New_DPNumber, b.AccountNumber, b.BankName, b.BVN, b.MobileNumber1, b.MobileNumber2, b.Email, b.StateOfOrigin, b.LGA, b.Nationality, b.recordtime FROM bsgovt.biodata b WHERE  b.recordtime BETWEEN :startDate AND :endDate", nativeQuery = true)
+    @Query(value = "SELECT b.BiodataID, b.DPNumber, b.Surname, b.Firstname, b.Othername, b.Gender, b.DOB, b.DOA_first, b.New_DPNumber, b.AccountNumber, b.BankName, b.BVN, b.MobileNumber1, b.MobileNumber2, b.Email, b.StateOfOrigin, b.LGA, b.Nationality, b.recordtime FROM bsgovt.biodata b WHERE  b.recordtime BETWEEN :startDate AND :endDate ORDER BY b.BiodataID ASC", nativeQuery = true)
     Set<Biodata> findAllByRecordtimeBetween(@Param("startDate") Date start, @Param("endDate")Date end);
 }
