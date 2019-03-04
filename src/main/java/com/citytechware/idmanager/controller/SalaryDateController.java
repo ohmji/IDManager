@@ -8,7 +8,6 @@ import com.citytechware.idmanager.model.salary.Biodata;
 import com.citytechware.idmanager.model.salary.Employment;
 import com.citytechware.idmanager.service.EmploymentService;
 import com.citytechware.idmanager.service.SalaryInformationService;
-import com.citytechware.idmanager.service.SalaryPhotoService;
 import com.citytechware.idmanager.utils.DateToTimestamp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +54,10 @@ public class SalaryDateController {
         return "/salary/search-by-daterange";
     }
 
+    // Search Staff Record within a Date-range and return a CSV
     @PostMapping(value = "/salary/search/daterange", produces = "application/csv")
     private void searchByDaterangeCSV(@RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
-        String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "Unique"}; // TODO Add Ministry
+        String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "Unique", "Ministry"};
 
         Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
         Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
@@ -65,7 +65,7 @@ public class SalaryDateController {
         Set<Biodata> biodataSet = salaryInformationService.findByDate(startOfDay, endOfDay);
         Set<StaffRecord> staffRecords = convertBiodataToStaffRecord(biodataSet);
 
-        addMinistries(staffRecords);
+        staffRecords = addMinistries(staffRecords);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.addHeader("Content-Disposition", "attachment; filename=\"staff.csv\"");
@@ -82,22 +82,35 @@ public class SalaryDateController {
         csvWriter.close();
     }
 
-    private void addMinistries(Set<StaffRecord> staffRecords) {
+    // Find Ministries attributed to staff and update DTO StaffRecord
+    private Set<StaffRecord> addMinistries(Set<StaffRecord> staffRecords) {
         // Return only BiodataIDs for use in querying employment records
         List<Integer> ids = getRecordIDs(staffRecords);
         // Query employment records of Staff in List StaffRecords
         Set<EmploymentRecord> employmentRecords = convertEmploymentToDTO(employmentService.findAllEmploymentForIDs(ids));
-        log.warn("Returned Ministries: " + employmentRecords.size());
 
-        // TODO Join Streams, add Ministry
-        /*
-        Stream<String> combinedStream = Stream.of(collectionA, collectionB)
-                .flatMap(Collection::stream);
-        Collection<String> collectionCombined =
-                combinedStream.collect(Collectors.toList());
-        */
+        // HashMap to Store Ministries by Staff ID BiodataID
+        Map<Integer, String> foundMinistries = new HashMap<>();
+        for (Integer curID : ids) {
+            for (EmploymentRecord e : employmentRecords)
+                if (e.getBiodataID() == curID) {
+                    foundMinistries.put(e.getBiodataID(), e.getMinistry());
+                }
+        }
+
+        // New Set of StaffRecord with Ministry
+        Set<StaffRecord> recordWithMinistry = new HashSet<>();
+        Iterator<StaffRecord> recordIterator = staffRecords.iterator();
+        while ((recordIterator.hasNext())) {
+            StaffRecord record = recordIterator.next();
+            record.setMinistry(foundMinistries.get(record.getBiodataID()));
+            recordWithMinistry.add(record);
+        }
+
+        return recordWithMinistry;
     }
 
+    // Convert DB Model Biodata to DTO StaffRecord
     private Set<StaffRecord> convertBiodataToStaffRecord(Set<Biodata> biodataSet) {
         Set<StaffRecord> staffRecords = new HashSet<>();
         for(Biodata b: biodataSet) {
@@ -106,6 +119,7 @@ public class SalaryDateController {
         return staffRecords;
     }
 
+    // Convert DB Model Employment to DTO EmploymentRecord
     private Set<EmploymentRecord> convertEmploymentToDTO(Set<Employment> employmentSet) {
         Set<EmploymentRecord> employmentRecords = new HashSet<>();
         for(Employment e: employmentSet) {
@@ -114,12 +128,12 @@ public class SalaryDateController {
         return employmentRecords;
     }
 
+    // Extract Only IDS into a List
     private List<Integer> getRecordIDs(Set<StaffRecord> staffRecords) {
         ArrayList<Integer> ids = new ArrayList<>();
-        Iterator<StaffRecord> iterator = staffRecords.iterator();
 
-        while(iterator.hasNext()) {
-            ids.add(iterator.next().getBiodataID());
+        for (StaffRecord staffRecord : staffRecords) {
+            ids.add(staffRecord.getBiodataID());
         }
 
         return ids;
