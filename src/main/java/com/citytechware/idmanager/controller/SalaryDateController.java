@@ -56,7 +56,7 @@ public class SalaryDateController {
 
     // Search Staff Record within a Date-range and return a CSV
     @PostMapping(value = "/salary/search/daterange", produces = "application/csv")
-    private void searchByDaterangeCSV(@RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
+    public void searchByDaterangeCSV(@RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
         String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "Unique", "Ministry"};
 
         Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
