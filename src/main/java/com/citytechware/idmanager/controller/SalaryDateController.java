@@ -5,7 +5,6 @@ import com.citytechware.idmanager.dto.StaffRecord;
 import com.citytechware.idmanager.dto.converter.BiodataToStaffRecordConverter;
 import com.citytechware.idmanager.dto.converter.EmploymentRecordConverter;
 import com.citytechware.idmanager.model.salary.Biodata;
-import com.citytechware.idmanager.model.salary.Employment;
 import com.citytechware.idmanager.service.EmploymentService;
 import com.citytechware.idmanager.service.SalaryInformationService;
 import com.citytechware.idmanager.utils.DateToTimestamp;
