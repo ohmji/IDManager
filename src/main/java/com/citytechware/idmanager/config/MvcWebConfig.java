@@ -1,4 +1,4 @@
-package com.citytechware.idmanager;
+package com.citytechware.idmanager.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
