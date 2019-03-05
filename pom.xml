@@ -11,6 +11,7 @@
     <groupId>com.citytechware</groupId>
     <artifactId>idmanager</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <name>IDManager</name>
     <description>IDManager for Extracting ID Card Information from Database</description>
 
@@ -82,7 +83,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.citytechware.idmanager.IdManagerApplication</mainClass>
+                </configuration>
             </plugin>
+
         </plugins>
     </build>
 
