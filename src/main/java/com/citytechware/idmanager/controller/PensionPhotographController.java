@@ -42,7 +42,7 @@ public class PensionPhotographController {
     }
 
     @PostMapping(value = "/download/photos", produces="application/zip")
-    public void downloadPhotosByDateRange(@RequestParam @NotNull Date startDate,
+    public String downloadPhotosByDateRange(Model model, @RequestParam @NotNull Date startDate,
                                     @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
 
         Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
@@ -50,32 +50,38 @@ public class PensionPhotographController {
 
         Set<Photograph> photographs = pensionPhotoService.findAllPhotographByDate(startOfDay, endOfDay);
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("Content-Disposition", "attachment; filename=\"photos.zip\"");
-        ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+        if(!photographs.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.addHeader("Content-Disposition", "attachment; filename=\"photos.zip\"");
+            ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 
-        for(Photograph photograph: photographs) {
-            byte[] photo = photograph.getPhotograph();
+            for(Photograph photograph: photographs) {
+                byte[] photo = photograph.getPhotograph();
 
-            // Create Image File in System temp directory
-            String tempDir = System.getProperty("java.io.tmpdir");
-            File temp = new File(tempDir + photograph.getBiodataID() + ".jpg");
+                // Create Image File in System temp directory
+                String tempDir = System.getProperty("java.io.tmpdir");
+                File temp = new File(tempDir + photograph.getBiodataID() + ".jpg");
 
-            // Write image byte into File
-            FileOutputStream out = new FileOutputStream(temp);
-            out.write(photo);
+                // Write image byte into File
+                FileOutputStream out = new FileOutputStream(temp);
+                out.write(photo);
 
-            // Add File to Zip
-            zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
-            FileInputStream fileInputStream = new FileInputStream(temp);
-            IOUtils.copy(fileInputStream, zipOutputStream);
+                // Add File to Zip
+                zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
+                FileInputStream fileInputStream = new FileInputStream(temp);
+                IOUtils.copy(fileInputStream, zipOutputStream);
 
-            // Close IO Resources
-            out.close();
-            fileInputStream.close();
-            zipOutputStream.closeEntry();
+                // Close IO Resources
+                out.close();
+                fileInputStream.close();
+                zipOutputStream.closeEntry();
+            }
+            zipOutputStream.close();
+
+        } else {
+            model.addAttribute("message", "No record Found!");
         }
-        zipOutputStream.close();
 
+        return "photos-by-date";
     }
 }

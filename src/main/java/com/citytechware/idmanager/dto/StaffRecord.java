@@ -2,6 +2,10 @@ package com.citytechware.idmanager.dto;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 @Data
 public class StaffRecord {
     private Integer BiodataID;
@@ -15,5 +19,15 @@ public class StaffRecord {
     private String DOA_first;
     private String Unique;
     private String Ministry;
+
+    public static List<Integer> getRecordIDs(Set<StaffRecord> staffRecords) {
+        ArrayList<Integer> ids = new ArrayList<>();
+
+        for (StaffRecord staffRecord : staffRecords) {
+            ids.add(staffRecord.getBiodataID());
+        }
+
+        return ids;
+    }
 
 }

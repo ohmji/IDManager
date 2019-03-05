@@ -47,28 +47,33 @@ public class PensionDateController {
     }
 
     @PostMapping(value = "/search/daterange", produces = "application/csv")
-    public void searchByDateRangeCSV(@RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
+    public String searchByDateRangeCSV(Model model, @RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
         String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "UniqueNo", "Ministry"};
 
         Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
         Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
 
         Set<Biodata> biodataSet = infomationService.findByDate(startOfDay, endOfDay);
-        Set<PensionRecords> pensioners = convertBiodataToPensionRecord(biodataSet);
+        if(!biodataSet.isEmpty()) {
+            Set<PensionRecords> pensioners = convertBiodataToPensionRecord(biodataSet);
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("Content-Disposition", "attachment; filename=\"pensioners.csv\"");
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.addHeader("Content-Disposition", "attachment; filename=\"pensioners.csv\"");
 
-        ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
-                CsvPreference.STANDARD_PREFERENCE);
-        csvWriter.writeHeader(headers);
+            ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
+                    CsvPreference.STANDARD_PREFERENCE);
+            csvWriter.writeHeader(headers);
 
-        if(!pensioners.isEmpty()) {
-            for(PensionRecords p : pensioners) {
-                csvWriter.write(p, headers);
+            if(!pensioners.isEmpty()) {
+                for(PensionRecords p : pensioners) {
+                    csvWriter.write(p, headers);
+                }
             }
+            csvWriter.close();
+        } else {
+            model.addAttribute("message", "No record found!");
         }
-        csvWriter.close();
+        return "search-by-daterange";
     }
 
     private Set<PensionRecords> convertBiodataToPensionRecord(Set<Biodata> biodataSet) {

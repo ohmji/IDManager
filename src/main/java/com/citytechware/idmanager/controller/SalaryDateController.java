@@ -49,45 +49,58 @@ public class SalaryDateController {
         model.addAttribute("applicationName", applicationName);
         model.addAttribute("startDate", new Date());
         model.addAttribute("endDate", new Date());
-        model.addAttribute("message", null);
 
         return "/salary/search-by-daterange";
     }
 
     // Search Staff Record within a Date-range and return a CSV
     @PostMapping(value = "/salary/search/daterange", produces = "application/csv")
-    public void searchByDaterangeCSV(@RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
+    public String searchByDaterangeCSV(Model model, @RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
         String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "Unique", "Ministry"};
 
         Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
         Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
 
         Set<Biodata> biodataSet = salaryInformationService.findByDate(startOfDay, endOfDay);
-        Set<StaffRecord> staffRecords = convertBiodataToStaffRecord(biodataSet);
+        if(!biodataSet.isEmpty()) {
+            Set<StaffRecord> staffRecords = BiodataToStaffRecordConverter.convertBiodataToStaffRecord(biodataSet);
 
-        staffRecords = addMinistries(staffRecords);
+            // Load Ministries Information for Staff
+            staffRecords = addMinistries(staffRecords);
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("Content-Disposition", "attachment; filename=\"staff.csv\"");
+            // Prepare HTTP response to return a CSV attachment
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.addHeader("Content-Disposition", "attachment; filename=\"staff.csv\"");
 
-        ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
-                CsvPreference.STANDARD_PREFERENCE);
-        csvWriter.writeHeader(headers);
+            // CSVWriter initialized with HTTP response writer and CSV File Headers
+            ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
+                    CsvPreference.STANDARD_PREFERENCE);
+            csvWriter.writeHeader(headers);
 
-        if(!staffRecords.isEmpty()) {
-            for(StaffRecord s : staffRecords) {
-                csvWriter.write(s, headers);
+            // Loop and write CSV File
+            if(!staffRecords.isEmpty()) {
+                for(StaffRecord s : staffRecords) {
+                    csvWriter.write(s, headers);
+                }
             }
+            csvWriter.close();
+        }else {
+            model.addAttribute("message", "No record found!");
         }
-        csvWriter.close();
+
+        model.addAttribute("applicationName", applicationName);
+        model.addAttribute("startDate", new Date());
+        model.addAttribute("endDate", new Date());
+
+        return "/salary/search-by-daterange";
     }
 
     // Find Ministries attributed to staff and update DTO StaffRecord
     private Set<StaffRecord> addMinistries(Set<StaffRecord> staffRecords) {
         // Return only BiodataIDs for use in querying employment records
-        List<Integer> ids = getRecordIDs(staffRecords);
+        List<Integer> ids = StaffRecord.getRecordIDs(staffRecords);
         // Query employment records of Staff in List StaffRecords
-        Set<EmploymentRecord> employmentRecords = convertEmploymentToDTO(employmentService.findAllEmploymentForIDs(ids));
+        Set<EmploymentRecord> employmentRecords = EmploymentRecordConverter.convertEmploymentToDTO(employmentService.findAllEmploymentForIDs(ids));
 
         // HashMap to Store Ministries by Staff ID BiodataID
         Map<Integer, String> foundMinistries = new HashMap<>();
@@ -110,32 +123,4 @@ public class SalaryDateController {
         return recordWithMinistry;
     }
 
-    // Convert DB Model Biodata to DTO StaffRecord
-    private Set<StaffRecord> convertBiodataToStaffRecord(Set<Biodata> biodataSet) {
-        Set<StaffRecord> staffRecords = new HashSet<>();
-        for(Biodata b: biodataSet) {
-            staffRecords.add(BiodataToStaffRecordConverter.convert(b));
-        }
-        return staffRecords;
-    }
-
-    // Convert DB Model Employment to DTO EmploymentRecord
-    private Set<EmploymentRecord> convertEmploymentToDTO(Set<Employment> employmentSet) {
-        Set<EmploymentRecord> employmentRecords = new HashSet<>();
-        for(Employment e: employmentSet) {
-            employmentRecords.add(EmploymentRecordConverter.convert(e));
-        }
-        return employmentRecords;
-    }
-
-    // Extract Only IDS into a List
-    private List<Integer> getRecordIDs(Set<StaffRecord> staffRecords) {
-        ArrayList<Integer> ids = new ArrayList<>();
-
-        for (StaffRecord staffRecord : staffRecords) {
-            ids.add(staffRecord.getBiodataID());
-        }
-
-        return ids;
-    }
 }
