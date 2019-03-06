@@ -6,7 +6,7 @@
     <groupId>com.citytechware</groupId>
     <artifactId>idmanager</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>IDManager</name>
     <description>IDManager for Extracting ID Card Information from Database</description>
@@ -19,6 +19,8 @@
     </parent>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <start-class>com.citytechware.idmanager.IdManagerApplication</start-class>
     </properties>
