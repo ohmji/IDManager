@@ -2,10 +2,10 @@ package com.citytechware.idmanager.controller;
 
 import com.citytechware.idmanager.dto.Pensioner;
 import com.citytechware.idmanager.dto.converter.BiodataToPensionerConverter;
-import com.citytechware.idmanager.model.pension.Photograph;
 import com.citytechware.idmanager.model.pension.Biodata;
-import com.citytechware.idmanager.service.PensionerInfomationService;
+import com.citytechware.idmanager.model.pension.Photograph;
 import com.citytechware.idmanager.service.PensionPhotoService;
+import com.citytechware.idmanager.service.PensionerInfomationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +43,7 @@ public class PensionIDController {
         this.pensionPhotoService = pensionPhotoService;
     }
 
-    @RequestMapping(value = "/search")
+    @GetMapping(value = "/search")
     public String showSearchPage(Model model) {
         model.addAttribute("DPNumber", "");
         model.addAttribute("applicationName", applicationName);

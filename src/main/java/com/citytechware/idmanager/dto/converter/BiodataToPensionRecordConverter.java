@@ -2,6 +2,7 @@ package com.citytechware.idmanager.dto.converter;
 
 import com.citytechware.idmanager.dto.PensionRecords;
 import com.citytechware.idmanager.model.pension.Biodata;
+import com.citytechware.idmanager.utils.NameEditor;
 
 public class BiodataToPensionRecordConverter {
     private BiodataToPensionRecordConverter() {
@@ -14,12 +15,7 @@ public class BiodataToPensionRecordConverter {
         p.setDPNumber(biodata.getDPNumber().trim());
         p.setFirstname(biodata.getFirstname().trim());
         p.setDOA_first(biodata.getDOAfirst().trim());
-        if(biodata.getOthername()!=null && !biodata.getOthername().isEmpty()) {
-            p.setInitial(biodata.getOthername().trim().substring(0,1));
-        } else {
-            p.setInitial("");
-        }
-
+        p.setInitial(NameEditor.initial(biodata.getOthername()));
         p.setGender(biodata.getGender().trim());
         p.setMinistry(biodata.getMinistry().trim());
         p.setUniqueNo(biodata.getNewDPNumber().trim());

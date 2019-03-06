@@ -12,9 +12,8 @@ import lombok.Setter;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 /**
  *
@@ -30,7 +29,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @EqualsAndHashCode
 public class Employment implements Serializable {
 
-    private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "ID")
@@ -47,65 +45,5 @@ public class Employment implements Serializable {
     private String payScale;
     @Column(name = "BiodataID")
     private Integer biodataID;
-
-    public Employment(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getDPNumber() {
-        return dPNumber;
-    }
-
-    public void setDPNumber(String dPNumber) {
-        this.dPNumber = dPNumber;
-    }
-
-    public String getGl() {
-        return gl;
-    }
-
-    public void setGl(String gl) {
-        this.gl = gl;
-    }
-
-    public String getStep() {
-        return step;
-    }
-
-    public void setStep(String step) {
-        this.step = step;
-    }
-
-    public String getMinistry() {
-        return ministry;
-    }
-
-    public void setMinistry(String ministry) {
-        this.ministry = ministry;
-    }
-
-    public String getPayScale() {
-        return payScale;
-    }
-
-    public void setPayScale(String payScale) {
-        this.payScale = payScale;
-    }
-
-    public Integer getBiodataID() {
-        return biodataID;
-    }
-
-    public void setBiodataID(Integer biodataID) {
-        this.biodataID = biodataID;
-    }
 
 }

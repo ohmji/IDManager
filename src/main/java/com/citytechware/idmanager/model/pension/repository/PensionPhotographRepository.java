@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,5 +23,5 @@ public interface PensionPhotographRepository extends JpaRepository<Photograph, I
     Set<Photograph> findAllByRecordtimeBetween(@Param("startDate") Date startDate, @Param("endDate")Date endDate);
 
     @Query(value = "SELECT b.PhotographID, b.recordtime, b.BiodataID, b.DPNumber, b.Photograph, b.Signature, b.vStatus FROM bsgovt_pension.photograph b WHERE b.BiodataID IN (:biodataIDs)", nativeQuery = true)
-    Set<Photograph> findAllByBiodataIDIn(@Param("biodataIDs") Integer[] ids);
+    Set<Photograph> findAllByBiodataIDIn(@Param("biodataIDs") List<Integer> ids);
 }
