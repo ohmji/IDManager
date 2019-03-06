@@ -49,7 +49,7 @@ public class SalaryDateController {
         model.addAttribute("startDate", new Date());
         model.addAttribute("endDate", new Date());
 
-        return "/salary/search-by-daterange";
+        return "salary/search-by-daterange";
     }
 
     // Search Staff Record within a Date-range and return a CSV
@@ -91,7 +91,7 @@ public class SalaryDateController {
         model.addAttribute("startDate", new Date());
         model.addAttribute("endDate", new Date());
 
-        return "/salary/search-by-daterange";
+        return "salary/search-by-daterange";
     }
 
     // Find Ministries attributed to staff and update DTO StaffRecord

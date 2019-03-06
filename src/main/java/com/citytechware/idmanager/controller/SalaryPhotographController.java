@@ -33,8 +33,6 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 @Profile("salary")
 public class SalaryPhotographController {
-    @Value("${my.application.name}")
-    private String applicationName;
     private SalaryPhotoService photoService;
     private SalaryInformationService salaryInformationService;
 
@@ -46,11 +44,10 @@ public class SalaryPhotographController {
 
     @GetMapping("/salary/download/photos")
     public String showPhotoDownloadPage(Model model) {
-        model.addAttribute("applicationName", applicationName);
         model.addAttribute("startDate", new Date());
         model.addAttribute("endDate", new Date());
 
-        return "/salary/photos";
+        return "salary/photos";
     }
 
     @PostMapping(value = "/salary/download/photos", produces="application/zip")
@@ -61,20 +58,19 @@ public class SalaryPhotographController {
 
         Set<Biodata> biodataSet = salaryInformationService.findByDate(startOfDay, endOfDay);
         if(!biodataSet.isEmpty()) {
-            Set<StaffRecord> staffRecords = BiodataToStaffRecordConverter.convertBiodataToStaffRecord(biodataSet);
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.addHeader("Content-Disposition", "attachment; filename=\"salary-photos.zip\"");
+            ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 
+            // Convert Biodata to DTO Set
+            Set<StaffRecord> staffRecords = BiodataToStaffRecordConverter.convertBiodataToStaffRecord(biodataSet);
             // Get Only BiodataID
             List<Integer> ids = StaffRecord.getRecordIDs(staffRecords);
-
             // Get Photos Using BiodataID
             Set<Photograph> photos = photoService.findAllByBiodataIDIn(ids);
 
+            // Find UniqueNo and Add to DTO in Set
             Set<StaffPhotoData> photographs = addUniqueNos(photos, staffRecords);
-
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.addHeader("Content-Disposition", "attachment; filename=\"staff_photos.zip\"");
-            ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
-
             for(StaffPhotoData photograph: photographs) {
                 byte[] photo = photograph.getPhotograph();
 
@@ -101,10 +97,10 @@ public class SalaryPhotographController {
             model.addAttribute("message", "No record Found!");
         }
 
-        model.addAttribute("applicationName", applicationName);
         model.addAttribute("startDate", new Date());
         model.addAttribute("endDate", new Date());
-        return "/salary/photos";
+
+        return "salary/photos";
     }
 
     private Set<StaffPhotoData> addUniqueNos(Set<Photograph> photographs,  Set<StaffRecord> staffRecords) {

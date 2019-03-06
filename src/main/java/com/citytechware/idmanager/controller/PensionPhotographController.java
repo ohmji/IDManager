@@ -5,6 +5,7 @@ import com.citytechware.idmanager.service.PensionPhotoService;
 import com.citytechware.idmanager.utils.DateToTimestamp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,7 +53,7 @@ public class PensionPhotographController {
 
         if(!photographs.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_OK);
-            response.addHeader("Content-Disposition", "attachment; filename=\"photos.zip\"");
+            response.addHeader("Content-Disposition", "attachment; filename=\"pension-photos.zip\"");
             ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 
             for(Photograph photograph: photographs) {
@@ -81,6 +82,9 @@ public class PensionPhotographController {
         } else {
             model.addAttribute("message", "No record Found!");
         }
+
+        model.addAttribute("startDate", new Date());
+        model.addAttribute("endDate", new Date());
 
         return "photos-by-date";
     }

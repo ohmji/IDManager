@@ -19,15 +19,15 @@
                 <p class="lead">Search Options:</p>
             </div>
             <div class="col-sm-6" th:if="${applicationName.equals('Pension')}">
-                <a href="/search"> <button type="button" class="btn btn-primary  btn-lg">Search By ID?</button> </a>
+                <a href="/search"> <button type="button" class="btn btn-primary btn-lg">Search By ID?</button> </a>
                 <a href="/search/daterange"> <button type="button" class="btn btn-success  btn-lg">Date-Range</button> </a>
-                <a href="/download/photos"> <button type="button" class="btn btn-success  btn-lg">Download Photos</button> </a>
+                <a href="/download/photos"> <button type="button" class="btn btn-info btn-lg">Download Photos</button> </a>
             </div>
 
             <div class="col-sm-6" th:if="${applicationName.equals('Salary')}">
                 <a href="/salary/search"> <button type="button" class="btn btn-primary  btn-lg">Search By ID?</button> </a>
                 <a href="/salary/search/daterange"> <button type="button" class="btn btn-success  btn-lg">Date-Range</button> </a>
-                <a href="/salary/download/photos"> <button type="button" class="btn btn-success  btn-lg">Download Photos</button> </a>
+                <a href="/salary/download/photos"> <button type="button" class="btn btn-info  btn-lg">Download Photos</button> </a>
             </div>
             <div class="col-sm-3">
             </div>

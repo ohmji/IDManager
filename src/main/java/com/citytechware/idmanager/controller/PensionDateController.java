@@ -41,6 +41,7 @@ public class PensionDateController {
 
     @GetMapping(value = "/search/daterange")
     public String showSearchByDateRangePage(Model model) {
+        model.addAttribute("applicationName", applicationName);
         model.addAttribute("startDate", new Date());
         model.addAttribute("endDate", new Date());
         return "search-by-daterange";
