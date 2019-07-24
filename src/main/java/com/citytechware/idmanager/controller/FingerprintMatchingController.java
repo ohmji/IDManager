@@ -9,6 +9,7 @@ import org.jnbis.api.Jnbis;
 import org.jnbis.api.handler.BitmapHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+
 import java.util.Optional;
 
 @Slf4j
@@ -20,7 +21,6 @@ public class FingerprintMatchingController {
     public FingerprintMatchingController(FingerprintRecordService service) {
         this.service = service;
     }
-
     @GetMapping(value = "/fingerprint")
     public String processFingerprint() {
         Optional<Fingerprintimages> optional = service.getFingerprintById(11);
@@ -30,8 +30,8 @@ public class FingerprintMatchingController {
             Fingerprintimages finger = optional.get();
             Fingerprintimages finger2 = optional2.get();
 
-            FingerprintTemplate fingerprintTemplate1 = decodeTemplate(finger.getFingerprintImage());
-            FingerprintTemplate fingerprintTemplate2 = decodeTemplate(finger2.getFingerprintImage());
+            FingerprintTemplate fingerprintTemplate1 = decodeWSQTemplate(finger.getFingerprintImage());
+            FingerprintTemplate fingerprintTemplate2 = decodeWSQTemplate(finger2.getFingerprintImage());
 
             double score = new FingerprintMatcher().index(fingerprintTemplate1)
                     .match(fingerprintTemplate2);
@@ -41,7 +41,7 @@ public class FingerprintMatchingController {
         return "fingerprint";
     }
 
-    private FingerprintTemplate decodeTemplate(byte[] wsqBytes) {
+    private FingerprintTemplate decodeWSQTemplate(byte[] wsqBytes) {
         BitmapHandler decode = Jnbis.wsq().decode(wsqBytes);
         return new FingerprintTemplate().create(decode.toPng().asByteArray());
     }
