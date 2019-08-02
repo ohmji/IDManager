@@ -1,6 +1,8 @@
 package com.citytechware.idmanager.service;
 
+import com.citytechware.idmanager.model.salary.FingerprintAFIS;
 import com.citytechware.idmanager.model.salary.Fingerprintimages;
+import com.citytechware.idmanager.model.salary.repository.FingerprintAFISRepository;
 import com.citytechware.idmanager.model.salary.repository.FingerprintImagesRepository;
 import com.citytechware.idmanager.utils.FingerprintTemplateDecoder;
 import com.machinezoo.sourceafis.FingerprintMatcher;
@@ -8,9 +10,13 @@ import com.machinezoo.sourceafis.FingerprintTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StopWatch;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,9 +26,11 @@ public class FingerprintMatcherService implements FingerprintMatcherOptions {
     private double matchingThreshold;
 
     private FingerprintImagesRepository imagesRepository;
+    private FingerprintAFISRepository afisRepository;
 
-    public FingerprintMatcherService(FingerprintImagesRepository imagesRepository) {
+    public FingerprintMatcherService(FingerprintImagesRepository imagesRepository, FingerprintAFISRepository afisRepository) {
         this.imagesRepository = imagesRepository;
+        this.afisRepository = afisRepository;
     }
 
     @Override
@@ -46,41 +54,69 @@ public class FingerprintMatcherService implements FingerprintMatcherOptions {
     }
 
     @Override
+    @Transactional
     public List<Fingerprintimages> findAllMatches(FingerprintPositions position, int probeBiodataID) {
         Optional<Fingerprintimages> probe = imagesRepository.findByBiodataIDAndFingerindexIDEquals(probeBiodataID, position.getIndex());
         if(!probe.isPresent()) {
             return Collections.emptyList();
         }
 
-        List<Fingerprintimages> candidates = imagesRepository.findAllByFingerindexIDEquals(position.getIndex());
-
         Fingerprintimages probeFinger = probe.get();
+        // Convert Fingerprint WSQ byte[] to SourceAFIS Template
+        FingerprintTemplate probeTemplate = FingerprintTemplateDecoder.decodeWSQTemplate(probeFinger.getFingerprintImage());
 
-        List<Fingerprintimages> matches = new ArrayList<>();
-        if (!candidates.isEmpty()) {
-            // Convert Fingerprint WSQ byte[] to SourceAFIS Template
-            FingerprintTemplate probeTemplate = FingerprintTemplateDecoder.decodeWSQTemplate(probeFinger.getFingerprintImage());
-            // Initialize Fingerprint Matcher 1:N
-            FingerprintMatcher matcher = new FingerprintMatcher().index(probeTemplate);
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
+        // Initialize Fingerprint Matcher 1:N
+        FingerprintMatcher matcher = new FingerprintMatcher().index(probeTemplate);
 
-            log.warn("Started Matching at {} ", new Date());
-            // Remove the probe fingerprint from the candidates list to avoid self matching
-            candidates.remove(probeFinger);
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        log.warn("Started Matching at {} ", new Date());
+        // Match probe against all non-null candidates
+        List<Fingerprintimages> matches = imagesRepository.findAllByFingerindexIDEquals(position.getIndex())
+                .parallel()
+                // Remove the probe fingerprint from the candidates list to avoid self matching
+                .filter(f -> f != probeFinger)
+                // Remove all null Fingerprint Images due to bad capture or record
+                .filter(f -> f.getFingerprintImage() != null)
+                .filter(f -> matcher.match(FingerprintTemplateDecoder.decodeWSQTemplate(f.getFingerprintImage())) >= matchingThreshold)
+                .collect(Collectors.toList());
 
-            log.warn("Matching against {} Candidates", candidates.size());
-            // Match probe against all non-null candidates
-            matches = candidates
-                    .parallelStream()
-                    .filter(f -> f.getFingerprintImage() != null)
-                    .filter(f -> matcher
-                            .match(FingerprintTemplateDecoder.decodeWSQTemplate(f.getFingerprintImage())) >= matchingThreshold)
-                    .collect(Collectors.toList());
+        stopWatch.stop();
+        log.warn("Finished Matching in {} secs", stopWatch.getTotalTimeSeconds());
 
-            stopWatch.stop();
-            log.warn("Finished Matching in {} secs", stopWatch.getTotalTimeSeconds());
+        return matches;
+    }
+
+    @Transactional
+    public List<FingerprintAFIS> matchAgainstCache(FingerprintPositions position, int probeBiodataID) {
+        Optional<FingerprintAFIS> probe = afisRepository.findByBiodataIDAndFingerindexIDEquals(probeBiodataID, position.getIndex());
+        if(!probe.isPresent()) {
+            return Collections.emptyList();
         }
+
+        FingerprintAFIS probeFingerprint = probe.get();
+        // Make Template from Cache
+        FingerprintTemplate probeTemplate = new FingerprintTemplate().deserialize(probeFingerprint.getFingerprintTemplate());
+
+        // Initialize Fingerprint Matcher 1:N
+        FingerprintMatcher matcher = new FingerprintMatcher().index(probeTemplate);
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        log.warn("Started Matching at {} ", new Date());
+        // Match probe against all non-null candidates
+        List<FingerprintAFIS> matches = afisRepository.findAllByFingerindexIDEquals(probeFingerprint.getFingerindexID())
+                .parallel()
+                // Remove the probe fingerprint from the candidates list to avoid self matching
+                .filter(f -> f != probeFingerprint)
+                // Remove all null Fingerprint Images due to bad capture or record
+                .filter(f -> f.getFingerprintTemplate() != null)
+                // Run FIngerprint Match Against all records
+                .filter(f -> matcher.match(new FingerprintTemplate().deserialize(f.getFingerprintTemplate())) >= matchingThreshold)
+                .collect(Collectors.toList());
+
+        stopWatch.stop();
+        log.warn("Finished Matching in {} secs", stopWatch.getTotalTimeSeconds());
 
         return matches;
     }
