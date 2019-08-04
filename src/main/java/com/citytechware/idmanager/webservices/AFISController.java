@@ -2,7 +2,7 @@ package com.citytechware.idmanager.webservices;
 
 import com.citytechware.idmanager.model.salary.FingerprintAFIS;
 import com.citytechware.idmanager.service.AFISService;
-import com.citytechware.idmanager.service.FingerprintPositions;
+import com.citytechware.idmanager.service.ImageFormats;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +24,13 @@ public class AFISController {
 
     @PostMapping("/fingerprint/serialize/{biodataID}")
     public ResponseEntity<?> serializeFingerprint(@NotNull @PathVariable int biodataID) {
-        List<FingerprintAFIS> afis = service.serialize(biodataID);
+        List<FingerprintAFIS> afis = service.process(biodataID);
         return (!afis.isEmpty()) ? ResponseEntity.ok().body(afis) : ResponseEntity.status(HttpStatus.NO_CONTENT).body("Serialization Failed");
     }
 
-    @PostMapping("/fingerprint/serialize/all/{finger}")
-    public ResponseEntity<String> serializeAll(@NotNull @PathVariable String finger) {
-        int serialized = service.serialize(FingerprintPositions.valueOf(finger));
+    @PostMapping("/fingerprint/serialize/all")
+    public ResponseEntity<String> serializeAll() {
+        int serialized = service.process(ImageFormats.JPG);
         return ResponseEntity.ok().body("Serialized " + serialized + " fingerprints");
     }
 }

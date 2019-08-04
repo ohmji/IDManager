@@ -78,16 +78,16 @@ public class SalaryPhotographController {
                 File temp = new File(tempDir + photograph.getUniqueNo() + ".jpg");
 
                 // Write image byte into File
-                FileOutputStream out = new FileOutputStream(temp);
-                out.write(photo);
+                FileInputStream fileInputStream;
 
-                // Add File to Zip
-                zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
-                FileInputStream fileInputStream = new FileInputStream(temp);
-                IOUtils.copy(fileInputStream, zipOutputStream);
+                try (FileOutputStream out = new FileOutputStream(temp)) {
+                    out.write(photo);
 
-                // Close IO Resources
-                out.close();
+                    // Add File to Zip
+                    zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
+                    fileInputStream = new FileInputStream(temp);
+                    IOUtils.copy(fileInputStream, zipOutputStream);
+                }
                 fileInputStream.close();
                 zipOutputStream.closeEntry();
             }
@@ -110,15 +110,13 @@ public class SalaryPhotographController {
         Map<Integer, String> foundPhotos = new HashMap<>();
         for (StaffPhotoData cur : photographSet) {
             for (StaffRecord e : staffRecords)
-                if (e.getBiodataID() == cur.getBiodataID()) {
+                if (e.getBiodataID().equals(cur.getBiodataID())) {
                     foundPhotos.put(e.getBiodataID(), e.getUnique());
                 }
         }
 
         Set<StaffPhotoData> photoDataSet = new HashSet<>();
-        Iterator<StaffPhotoData> iterator = photographSet.iterator();
-        while(iterator.hasNext()) {
-            StaffPhotoData photo = iterator.next();
+        for (StaffPhotoData photo : photographSet) {
             photo.setUniqueNo(foundPhotos.get(photo.getBiodataID()));
             photoDataSet.add(photo);
         }
