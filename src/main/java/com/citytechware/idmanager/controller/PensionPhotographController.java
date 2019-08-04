@@ -5,7 +5,6 @@ import com.citytechware.idmanager.service.PensionPhotoService;
 import com.citytechware.idmanager.utils.DateToTimestamp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -54,6 +53,7 @@ public class PensionPhotographController {
         if(!photographs.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.addHeader("Content-Disposition", "attachment; filename=\"pension-photos.zip\"");
+
             ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 
             for(Photograph photograph: photographs) {
@@ -64,16 +64,15 @@ public class PensionPhotographController {
                 File temp = new File(tempDir + photograph.getBiodataID() + ".jpg");
 
                 // Write image byte into File
-                FileOutputStream out = new FileOutputStream(temp);
-                out.write(photo);
+                FileInputStream fileInputStream;
+                try (FileOutputStream out = new FileOutputStream(temp)) {
+                    out.write(photo);
 
-                // Add File to Zip
-                zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
-                FileInputStream fileInputStream = new FileInputStream(temp);
-                IOUtils.copy(fileInputStream, zipOutputStream);
-
-                // Close IO Resources
-                out.close();
+                    // Add File to Zip
+                    zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
+                    fileInputStream = new FileInputStream(temp);
+                    IOUtils.copy(fileInputStream, zipOutputStream);
+                }
                 fileInputStream.close();
                 zipOutputStream.closeEntry();
             }
