@@ -111,8 +111,15 @@ public class FingerprintMatcherService implements FingerprintMatcherOptions {
                 .filter(f -> f != probeFingerprint)
                 // Remove all null Fingerprint Images due to bad capture or record
                 .filter(f -> f.getFingerprintTemplate() != null)
-                // Run FIngerprint Match Against all records
-                .filter(f -> matcher.match(new FingerprintTemplate().deserialize(f.getFingerprintTemplate())) >= matchingThreshold)
+                // Run Fingerprint Match Against all records
+                .filter(f -> {
+                    FingerprintTemplate temp = new FingerprintTemplate().deserialize(f.getFingerprintTemplate());
+                    double score = matcher.match(temp);
+                    if (score>=matchingThreshold) {
+                        log.info("Match found between {} and {} with score of {}", probeFingerprint.getBiodataID(), f.getBiodataID(), score);
+                    }
+                    return score >= matchingThreshold;
+                })
                 .collect(Collectors.toList());
 
         stopWatch.stop();

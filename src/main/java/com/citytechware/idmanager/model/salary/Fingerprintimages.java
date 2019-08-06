@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,7 +19,6 @@ import java.util.Date;
  *
  * @author Muhammad Hussaini
  */
-@Component
 @Profile("salary")
 @Entity
 @Table(name = "fingerprintimages")

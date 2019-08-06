@@ -5,12 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Component
 @Profile("salary")
 @Entity
 @Table(name = "fingerprintafis")
@@ -30,16 +28,23 @@ public class FingerprintAFIS {
     private int fingerindexID;
     @Column(nullable = false, columnDefinition = "json")
     private String fingerprintTemplate;
+    @Column
+    @Lob
+    private byte[] fingerprintImage;
+    @Column
+    private String imageFormat;
 
     @Column(name = "recordtime", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date recordtime;
 
-    public FingerprintAFIS(int biodataID, String dPNumber, int fingerindexID, String fingerprintTemplate, Date recordtime) {
+    public FingerprintAFIS(int biodataID, String dPNumber, int fingerindexID, byte[] fingerprintImage, String imageFormat, String json) {
         this.biodataID = biodataID;
         this.dPNumber = dPNumber;
         this.fingerindexID = fingerindexID;
-        this.fingerprintTemplate = fingerprintTemplate;
-        this.recordtime = recordtime;
+        this.fingerprintImage = fingerprintImage;
+        this.imageFormat = imageFormat;
+        this.fingerprintTemplate = json;
+        this.recordtime = new Date();
     }
 }
