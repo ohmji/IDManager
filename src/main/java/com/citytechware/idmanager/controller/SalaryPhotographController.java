@@ -52,46 +52,49 @@ public class SalaryPhotographController {
     @PostMapping(value = "/salary/download/photos", produces="application/zip")
     private String downloadPhotos(Model model, @RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
 
-        Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
-        Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
+        Date startOfDay = DateToTimestamp.getTimeAtStartOfDay(startDate);
+        Date endOfDay = DateToTimestamp.getTimeAtEndOfDay(endDate);
 
         Set<Biodata> biodataSet = salaryInformationService.findByDate(startOfDay, endOfDay);
         if(!biodataSet.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.addHeader("Content-Disposition", "attachment; filename=\"salary-photos.zip\"");
-            ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 
-            // Convert Biodata to DTO Set
-            Set<StaffRecord> staffRecords = BiodataToStaffRecordConverter.convertBiodataToStaffRecord(biodataSet);
-            // Get Only BiodataID
-            List<Integer> ids = StaffRecord.getRecordIDs(staffRecords);
-            // Get Photos Using BiodataID
-            Set<Photograph> photos = photoService.findAllByBiodataIDIn(ids);
+            try ( ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream()); ) {
+                // Convert Biodata to DTO Set
+                Set<StaffRecord> staffRecords = BiodataToStaffRecordConverter.convertBiodataToStaffRecord(biodataSet);
+                // Get Only BiodataID
+                List<Integer> ids = StaffRecord.getRecordIDs(staffRecords);
+                // Get Photos Using BiodataID
+                Set<Photograph> photos = photoService.findAllByBiodataIDIn(ids);
 
-            // Find UniqueNo and Add to DTO in Set
-            Set<StaffPhotoData> photographs = addUniqueNos(photos, staffRecords);
-            for(StaffPhotoData photograph: photographs) {
-                byte[] photo = photograph.getPhotograph();
+                // Find UniqueNo and Add to DTO in Set
+                Set<StaffPhotoData> photographs = addUniqueNos(photos, staffRecords);
+                for(StaffPhotoData photograph: photographs) {
+                    byte[] photo = photograph.getPhotograph();
 
-                // Create Image File in System temp directory
-                String tempDir = System.getProperty("java.io.tmpdir");
-                File temp = new File(tempDir + photograph.getUniqueNo() + ".jpg");
+                    // Create Image File in System temp directory
+                    String tempDir = System.getProperty("java.io.tmpdir");
+                    File temp = new File(tempDir + photograph.getUniqueNo() + ".jpg");
 
-                // Write image byte into File
-                FileInputStream fileInputStream;
+                    // Write image byte into File
+                    FileInputStream fileInputStream;
 
-                try (FileOutputStream out = new FileOutputStream(temp)) {
-                    out.write(photo);
+                    try (FileOutputStream out = new FileOutputStream(temp)) {
+                        out.write(photo);
 
-                    // Add File to Zip
-                    zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
-                    fileInputStream = new FileInputStream(temp);
-                    IOUtils.copy(fileInputStream, zipOutputStream);
+                        // Add File to Zip
+                        zipOutputStream.putNextEntry(new ZipEntry(temp.getName()));
+                        fileInputStream = new FileInputStream(temp);
+                        IOUtils.copy(fileInputStream, zipOutputStream);
+                    }
+                    fileInputStream.close();
+                    zipOutputStream.closeEntry();
                 }
-                fileInputStream.close();
-                zipOutputStream.closeEntry();
+            } catch (Exception e) {
+                log.error("Error occurred zipping photos", e);
             }
-            zipOutputStream.close();
+
         } else {
             model.addAttribute("message", "No record Found!");
         }
@@ -108,18 +111,15 @@ public class SalaryPhotographController {
         Set<StaffPhotoData> photographSet = StaffPhotoData.convertPhotographsToPhotoDataSet(photographs);
 
         Map<Integer, String> foundPhotos = new HashMap<>();
-        for (StaffPhotoData cur : photographSet) {
-            for (StaffRecord e : staffRecords)
-                if (e.getBiodataID().equals(cur.getBiodataID())) {
-                    foundPhotos.put(e.getBiodataID(), e.getUnique());
-                }
-        }
+        photographSet.forEach(cur -> staffRecords.stream()
+                .filter(e -> e.getBiodataID().equals(cur.getBiodataID()))
+                .forEach(e -> foundPhotos.put(e.getBiodataID(), e.getUnique())));
 
         Set<StaffPhotoData> photoDataSet = new HashSet<>();
-        for (StaffPhotoData photo : photographSet) {
+        photographSet.forEach(photo -> {
             photo.setUniqueNo(foundPhotos.get(photo.getBiodataID()));
             photoDataSet.add(photo);
-        }
+        });
 
         return photoDataSet;
     }

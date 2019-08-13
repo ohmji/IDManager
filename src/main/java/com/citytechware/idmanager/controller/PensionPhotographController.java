@@ -45,8 +45,8 @@ public class PensionPhotographController {
     public String downloadPhotosByDateRange(Model model, @RequestParam @NotNull Date startDate,
                                     @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
 
-        Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
-        Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
+        Date startOfDay = DateToTimestamp.getTimeAtStartOfDay(startDate);
+        Date endOfDay = DateToTimestamp.getTimeAtEndOfDay(endDate);
 
         Set<Photograph> photographs = pensionPhotoService.findAllPhotographByDate(startOfDay, endOfDay);
 

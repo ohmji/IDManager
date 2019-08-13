@@ -9,7 +9,6 @@ import com.citytechware.idmanager.service.EmploymentService;
 import com.citytechware.idmanager.service.SalaryInformationService;
 import com.citytechware.idmanager.utils.DateToTimestamp;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
@@ -37,7 +36,6 @@ public class SalaryDateController {
     private SalaryInformationService salaryInformationService;
     private EmploymentService employmentService;
 
-    @Autowired
     public SalaryDateController(SalaryInformationService salaryInformationService, EmploymentService employmentService) {
         this.salaryInformationService = salaryInformationService;
         this.employmentService = employmentService;
@@ -57,8 +55,8 @@ public class SalaryDateController {
     public String searchByDaterangeCSV(Model model, @RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
         String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "Unique", "Ministry"};
 
-        Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
-        Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
+        Date startOfDay = DateToTimestamp.getTimeAtStartOfDay(startDate);
+        Date endOfDay = DateToTimestamp.getTimeAtEndOfDay(endDate);
 
         Set<Biodata> biodataSet = salaryInformationService.findByDate(startOfDay, endOfDay);
         if(!biodataSet.isEmpty()) {
@@ -104,17 +102,14 @@ public class SalaryDateController {
         // HashMap to Store Ministries by Staff ID BiodataID
         Map<Integer, String> foundMinistries = new HashMap<>();
         for (Integer curID : ids) {
-            for (EmploymentRecord e : employmentRecords)
-                if (e.getBiodataID() == curID) {
-                    foundMinistries.put(e.getBiodataID(), e.getMinistry());
-                }
+            employmentRecords.stream()
+                    .filter(e -> e.getBiodataID().equals(curID))
+                    .forEach(e -> foundMinistries.put(e.getBiodataID(), e.getMinistry()));
         }
 
         // New Set of StaffRecord with Ministry
         Set<StaffRecord> recordWithMinistry = new HashSet<>();
-        Iterator<StaffRecord> recordIterator = staffRecords.iterator();
-        while ((recordIterator.hasNext())) {
-            StaffRecord record = recordIterator.next();
+        for (StaffRecord record : staffRecords) {
             record.setMinistry(foundMinistries.get(record.getBiodataID()));
             recordWithMinistry.add(record);
         }

@@ -51,8 +51,8 @@ public class PensionDateController {
     public String searchByDateRangeCSV(Model model, @RequestParam @NotNull Date startDate, @RequestParam @NotNull Date endDate, HttpServletResponse response) throws IOException {
         String[] headers = { "BiodataID", "DPNumber", "Surname", "Firstname", "Initial", "Othername", "Gender", "DOB", "DOA_first", "UniqueNo", "Ministry"};
 
-        Date startOfDay = DateToTimestamp.getStartOrEndOfDay(startDate, DateToTimestamp.START_OF_DAY);
-        Date endOfDay = DateToTimestamp.getStartOrEndOfDay(endDate, DateToTimestamp.END_OF_DAY);
+        Date startOfDay = DateToTimestamp.getTimeAtStartOfDay(startDate);
+        Date endOfDay = DateToTimestamp.getTimeAtEndOfDay(endDate);
 
         Set<Biodata> biodataSet = infomationService.findByDate(startOfDay, endOfDay);
         if(!biodataSet.isEmpty()) {

@@ -16,7 +16,7 @@ public class FingerprintFormatConverter {
     }
 
     public static List<FingerprintAFIS> convert(Stream<Fingerprintimages> fingerprintimagesStream, ImageFormats imageFormat) {
-        List<FingerprintAFIS> afisList = fingerprintimagesStream.parallel()
+        return fingerprintimagesStream.parallel()
                 .filter(f -> f.getFingerprintImage() != null)
                 .map(f -> {
                     byte[] wsqBytes = f.getFingerprintImage();
@@ -35,8 +35,6 @@ public class FingerprintFormatConverter {
 
                     return afis;
                 }).collect(Collectors.toList());
-
-        return afisList;
     }
 
     public static FingerprintAFIS convert(Fingerprintimages f,  ImageFormats imageFormat) {

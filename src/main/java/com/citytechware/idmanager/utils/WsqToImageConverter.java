@@ -17,12 +17,10 @@ public class WsqToImageConverter {
                 return wsq.decode(wsqBytes).toJpg().asByteArray();
             case PNG:
                 return wsq.decode(wsqBytes).toPng().asByteArray();
-            case BITMAP:
-                return wsq.decode(wsqBytes).asBitmap().getPixels();
             case GIF:
                 return wsq.decode(wsqBytes).toGif().asByteArray();
             default:
-                throw new IllegalStateException("Unexpected value: " + format);
+                throw new IllegalStateException("Unsupported Image Format: " + format);
         }
     }
 }

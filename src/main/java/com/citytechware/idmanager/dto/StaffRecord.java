@@ -2,9 +2,9 @@ package com.citytechware.idmanager.dto;
 
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 public class StaffRecord {
@@ -21,13 +21,9 @@ public class StaffRecord {
     private String Ministry;
 
     public static List<Integer> getRecordIDs(Set<StaffRecord> staffRecords) {
-        ArrayList<Integer> ids = new ArrayList<>();
-
-        for (StaffRecord staffRecord : staffRecords) {
-            ids.add(staffRecord.getBiodataID());
-        }
-
-        return ids;
+        return staffRecords.stream()
+                .map(StaffRecord::getBiodataID)
+                .collect(Collectors.toList());
     }
 
 }

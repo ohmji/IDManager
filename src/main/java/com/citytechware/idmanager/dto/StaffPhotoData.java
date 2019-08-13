@@ -14,13 +14,12 @@ public class StaffPhotoData {
 
     public static Set<StaffPhotoData> convertPhotographsToPhotoDataSet(Set<Photograph> photographSet) {
         Set<StaffPhotoData> photoDataSet = new HashSet<>();
-        for(Photograph p: photographSet) {
+        photographSet.forEach(p -> {
             StaffPhotoData s = new StaffPhotoData();
             s.setBiodataID(p.getBiodataID());
             s.setPhotograph(p.getPhotograph());
-
             photoDataSet.add(s);
-        }
+        });
 
         return photoDataSet;
     }
