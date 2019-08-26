@@ -5,7 +5,7 @@ import com.citytechware.idmanager.model.salary.FingerprintAFIS;
 import java.util.List;
 
 public interface FingerprintSerializer {
-    int process(ImageFormats imageFormat);
-    List<FingerprintAFIS> process(int biodataID);
+    int serialize(ImageFormats imageFormat);
+    List<FingerprintAFIS> serializeOne(int biodataID);
 
 }

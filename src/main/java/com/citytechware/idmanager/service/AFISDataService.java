@@ -5,7 +5,7 @@ import com.citytechware.idmanager.model.salary.Fingerprintimages;
 import com.citytechware.idmanager.model.salary.repository.FingerprintAFISRepository;
 import com.citytechware.idmanager.model.salary.repository.FingerprintImagesRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +27,13 @@ public class AFISDataService implements FingerprintData {
     @Override
     public Stream<Fingerprintimages> load(int page, int size) {
         log.warn("Requesting page {} with {} records", page, size);
-        PageRequest request = PageRequest.of(page, size);
         List<Fingerprintimages> list = imagesRepository.findAllWithPaging(page, size);
         return list.stream();
     }
 
     @Override
     @Transactional
+    @Async
     public void save(List<FingerprintAFIS> afisData) {
         log.info("Saving Batch of {} into DB", afisData.size());
         afisRepository.saveAll(afisData);

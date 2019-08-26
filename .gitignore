@@ -11,6 +11,8 @@
 .sts4-cache
 
 ### Project ###
+*.log
+*.gz
 
 ### IntelliJ IDEA ###
 .idea
